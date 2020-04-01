@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "style-loader!css-loader!../css/styles.css";
 import "style-loader!css-loader!../examples/example-styles.css";
+import "style-loader!css-loader!../node_modules/react-resizable/css/styles.css";
 typeof window !== "undefined" && (window.React = React); // for devtools
 
 export default function makeLayout(Layout) {
@@ -42,7 +43,10 @@ export default function makeLayout(Layout) {
   function run() {
     const contentDiv = document.getElementById("content");
     const gridProps = window.gridProps || {};
-    ReactDOM.render(React.createElement(ListeningLayout, gridProps), contentDiv);
+    ReactDOM.render(
+      React.createElement(ListeningLayout, gridProps),
+      contentDiv
+    );
   }
   if (!document.getElementById("content")) {
     document.addEventListener("DOMContentLoaded", run);

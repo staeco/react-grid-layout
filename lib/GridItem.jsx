@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 import { DraggableCore } from "react-draggable";
-import { Resizable } from "react-resizable";
+import { Resizable, ResizeHandle } from "react-resizable";
 import { fastPositionEqual, perc, setTopLeft, setTransform } from "./utils";
 import { calcGridItemPosition, calcXY, calcWH } from "./calculateUtils";
 import classNames from "classnames";
@@ -48,6 +48,7 @@ type Props = {
   usePercentages?: boolean,
   transformScale: number,
   droppingPosition?: DroppingPosition,
+  resizeHandles?: ResizeHandle[],
 
   className: string,
   style?: Object,
@@ -89,6 +90,7 @@ export default class GridItem extends React.Component<Props, State> {
     margin: PropTypes.array.isRequired,
     maxRows: PropTypes.number.isRequired,
     containerPadding: PropTypes.array.isRequired,
+    resizeHandles: PropTypes.array.isRequired,
 
     // These are all in grid units
     x: PropTypes.number.isRequired,
@@ -167,7 +169,8 @@ export default class GridItem extends React.Component<Props, State> {
     minW: 1,
     maxH: Infinity,
     maxW: Infinity,
-    transformScale: 1
+    transformScale: 1,
+    resizeHandles: ["se"]
   };
 
   state: State = {
@@ -333,7 +336,16 @@ export default class GridItem extends React.Component<Props, State> {
     position: Position,
     isResizable: boolean
   ): ReactElement<any> {
-    const { cols, x, minW, minH, maxW, maxH, transformScale } = this.props;
+    const {
+      cols,
+      x,
+      minW,
+      minH,
+      maxW,
+      maxH,
+      transformScale,
+      resizeHandles
+    } = this.props;
     const positionParams = this.getPositionParams();
 
     // This is the max possible width - doesn't go to infinity because of the width of the window
@@ -362,6 +374,7 @@ export default class GridItem extends React.Component<Props, State> {
         onResizeStart={this.onResizeStart}
         onResize={this.onResize}
         transformScale={transformScale}
+        resizeHandles={resizeHandles}
       >
         {child}
       </Resizable>

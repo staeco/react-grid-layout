@@ -86,6 +86,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     style: {},
     draggableHandle: "",
     draggableCancel: "",
+    resizeHandles: ["se"],
     containerPadding: null,
     rowHeight: 150,
     maxRows: Infinity, // infinite vertical growth
@@ -457,7 +458,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       rowHeight,
       maxRows,
       useCSSTransforms,
-      transformScale
+      transformScale,
+      resizeHandles
     } = this.props;
 
     // {...this.state.activeDrag} is pretty slow, actually
@@ -479,6 +481,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
         isResizable={false}
         useCSSTransforms={useCSSTransforms}
         transformScale={transformScale}
+        resizeHandles={resizeHandles}
       >
         <div />
       </GridItem>
@@ -509,7 +512,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       useCSSTransforms,
       transformScale,
       draggableCancel,
-      draggableHandle
+      draggableHandle,
+      resizeHandles
     } = this.props;
     const { mounted, droppingPosition } = this.state;
 
@@ -527,6 +531,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
 
     return (
       <GridItem
+        resizeHandles={resizeHandles}
         containerWidth={width}
         cols={cols}
         margin={margin}
