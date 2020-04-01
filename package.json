@@ -35,11 +35,11 @@
   },
   "homepage": "https://github.com/STRML/react-grid-layout",
   "dependencies": {
-    "classnames": "2.x",
+    "classnames": "^2.2.6",
     "lodash.isequal": "^4.0.0",
-    "prop-types": "^15.0.0",
+    "prop-types": "^15.7.2",
     "react-draggable": "^4.0.0",
-    "react-resizable": "^1.9.0"
+    "react-resizable": "^1.10.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.0",
