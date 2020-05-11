@@ -79,7 +79,7 @@ var _default = {
   useCSSTransforms: _propTypes.default.bool,
   // parent layout transform scale
   transformScale: _propTypes.default.number,
-  resizeHandles: _propTypes.default.arrayOf(_propTypes.default.oneOf(["s", "w", "e", "n", "sw", "nw", "se", "ne"])),
+  resizeHandles: _propTypes.default.arrayOf(_propTypes.default.string),
   // If true, an external element can trigger onDrop callback with a specific grid position as a parameter
   isDroppable: _propTypes.default.bool,
   //
