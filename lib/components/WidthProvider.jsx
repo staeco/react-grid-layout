@@ -4,7 +4,8 @@ import PropTypes from "prop-types";
 import ReactDOM from "react-dom";
 
 type WPDefaultProps = {|
-  measureBeforeMount: boolean
+  measureBeforeMount: boolean,
+  onWidthProvider?: ({ width: number }) => void
 |};
 
 // eslint-disable-next-line no-unused-vars
@@ -29,6 +30,7 @@ export default function WidthProvider<Config>(
 ): React.AbstractComponent<{|
   ...Config,
   measureBeforeMount?: boolean,
+  onWidthProvider?: ({ width: number }) => void,
   className?: string,
   style?: Object,
   width?: number
@@ -37,6 +39,7 @@ export default function WidthProvider<Config>(
     {|
       ...Config,
       measureBeforeMount?: boolean,
+      onWidthProvider?: ({ width: number }) => void,
       className?: string,
       style?: Object,
       width?: number
@@ -44,13 +47,15 @@ export default function WidthProvider<Config>(
     WPState
   > {
     static defaultProps: WPDefaultProps = {
-      measureBeforeMount: false
+      measureBeforeMount: false,
+      onWidthProvider: undefined
     };
 
     static propTypes = {
       // If true, will not render children until mounted. Useful for getting the exact width before
       // rendering, to prevent any unsightly resizing.
-      measureBeforeMount: PropTypes.bool
+      measureBeforeMount: PropTypes.bool,
+      onWidthProvider: PropTypes.func
     };
 
     state = {
@@ -78,8 +83,13 @@ export default function WidthProvider<Config>(
       if (!this.mounted) return;
       // eslint-disable-next-line react/no-find-dom-node
       const node = ReactDOM.findDOMNode(this); // Flow casts this to Text | Element
-      if (node instanceof HTMLElement)
-        this.setState({ width: node.offsetWidth });
+      if (node instanceof HTMLElement) {
+        const width = node.offsetWidth;
+        this.setState({ width });
+        if (this.props.onWidthProvider) {
+          this.props.onWidthProvider({ width });
+        }
+      }
     };
 
     render() {

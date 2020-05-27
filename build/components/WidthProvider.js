@@ -57,6 +57,7 @@ function WidthProvider
 /*: React.AbstractComponent<{|
   ...Config,
   measureBeforeMount?: boolean,
+  onWidthProvider?: ({ width: number }) => void,
   className?: string,
   style?: Object,
   width?: number
@@ -94,9 +95,19 @@ function WidthProvider
         var node = _reactDom.default.findDOMNode(_assertThisInitialized(_this)); // Flow casts this to Text | Element
 
 
-        if (node instanceof HTMLElement) _this.setState({
-          width: node.offsetWidth
-        });
+        if (node instanceof HTMLElement) {
+          var width = node.offsetWidth;
+
+          _this.setState({
+            width: width
+          });
+
+          if (_this.props.onWidthProvider) {
+            _this.props.onWidthProvider({
+              width: width
+            });
+          }
+        }
       });
 
       return _this;
@@ -138,10 +149,12 @@ function WidthProvider
 
     return WidthProvider;
   }(React.Component), _defineProperty(_class, "defaultProps", {
-    measureBeforeMount: false
+    measureBeforeMount: false,
+    onWidthProvider: undefined
   }), _defineProperty(_class, "propTypes", {
     // If true, will not render children until mounted. Useful for getting the exact width before
     // rendering, to prevent any unsightly resizing.
-    measureBeforeMount: _propTypes.default.bool
+    measureBeforeMount: _propTypes.default.bool,
+    onWidthProvider: _propTypes.default.func
   }), _temp;
 }
