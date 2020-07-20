@@ -37,7 +37,7 @@ var _default = {
   ) {
     if (props.verticalCompact === false && process.env.NODE_ENV !== "production") {
       console.warn( // eslint-disable-line no-console
-      "`verticalCompact` on <ReactGridLayout> is deprecated and will be removed soon. " + 'Use `compactType`: "horizontal" | "vertical" | null.');
+      "`verticalCompact` on <ReactGridLayout> is deprecated and will be removed soon. " + 'Use `compactType`: "horizontal" | "vertical" | "wrap" | null.');
     }
   },
   // Choose vertical or hotizontal compaction

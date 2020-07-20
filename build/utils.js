@@ -456,6 +456,13 @@ function moveElement(layout
 /*: CompactType*/
 , cols
 /*: number*/
+, // when compactType is wrap, this is deduced during the initial
+// call when isUserAction is true, then passed on to recursive
+// calls where isUserAction is false. It indicates that the original move
+// was towards the (top) left of the matrix, when the matrix is
+// viewed as a wrapped sequence.
+isLeftShift
+/*: ?boolean*/
 )
 /*: Layout*/
 {
@@ -487,6 +494,19 @@ function moveElement(layout
     l.y = oldY;
     l.moved = false;
     return layout;
+  } // in wrap mode, the usual effect of isUserAction is replaced by
+  // taking this opportunity to figure out whether the original move
+  // was actually to an earlier position in the visual sequence of
+  // left-to-right top-to-bottom wrapping rows.
+
+
+  if (compactType == "wrap" && isUserAction) {
+    var newY = y || l.y; // treat undefined as unchanged.
+
+    var newX = x || l.x;
+    isUserAction = false;
+    isLeftShift = oldY - newY <= 0;
+    if (oldY === newY) isLeftShift = oldX - newX <= 0;
   } // Move each item that collides away from this element.
 
 
@@ -497,9 +517,9 @@ function moveElement(layout
     if (collision.moved) continue; // Don't move static items - we have to move *this* element away
 
     if (collision.static) {
-      layout = moveElementAwayFromCollision(layout, collision, l, isUserAction, compactType, cols);
+      layout = moveElementAwayFromCollision(layout, collision, l, isUserAction, compactType, cols, isLeftShift);
     } else {
-      layout = moveElementAwayFromCollision(layout, l, collision, isUserAction, compactType, cols);
+      layout = moveElementAwayFromCollision(layout, l, collision, isUserAction, compactType, cols, isLeftShift);
     }
   }
 
@@ -527,18 +547,22 @@ function moveElementAwayFromCollision(layout
 /*: CompactType*/
 , cols
 /*: number*/
+, isLeftShift
+/*: ?boolean*/
 )
 /*: Layout*/
 {
-  var compactH = compactType === "horizontal"; // Compact vertically if not set to horizontal
+  var compactH = compactType === "horizontal";
+  var compactW = compactType === "wrap"; // Compact vertically if not set to horizontal or wrap
 
-  var compactV = compactType !== "horizontal";
+  var compactV = compactType !== !compactH && !compactW;
   var preventCollision = collidesWith.static; // we're already colliding (not for static items)
   // If there is enough space above the collision to put this element, move it there.
   // We only do this on the main collision as this can get funky in cascades and cause
-  // unwanted swapping behavior.
+  // unwanted swapping behavior. It's also disabled in wrap mode, where we're trying
+  // to preserve a visual order in wrapping rows.
 
-  if (isUserAction) {
+  if (isUserAction && !compactW) {
     // Reset isUserAction flag because we're not in the main collision anymore.
     isUserAction = false; // Make a mock item so we don't modify the item here, only modify in moveElement.
 
@@ -554,11 +578,29 @@ function moveElementAwayFromCollision(layout
 
     if (!getFirstCollision(layout, fakeItem)) {
       log("Doing reverse collision on ".concat(itemToMove.i, " up to [").concat(fakeItem.x, ",").concat(fakeItem.y, "]."));
-      return moveElement(layout, itemToMove, compactH ? fakeItem.x : undefined, compactV ? fakeItem.y : undefined, isUserAction, preventCollision, compactType, cols);
+      return moveElement(layout, itemToMove, compactH ? fakeItem.x : undefined, compactV ? fakeItem.y : undefined, isUserAction, preventCollision, compactType, cols, isLeftShift // for consistency; currently we don't need it here.
+      );
     }
+  } // These defaults, from the pre-wrap-mode code, are good for the two simple cases
+  // (except I, John Thomson, think we might sometimes need to move further if collidesWith
+  // has a width or height greater than 1? Don't have time to explore this now; it wasn't
+  // the problem I was trying to solve when introducing wrap mode.)
+
+
+  var x = compactH ? itemToMove.x + 1 : undefined;
+  var y = compactV ? itemToMove.y + 1 : undefined;
+
+  if (compactW) {
+    // We want to move it along the row in the direction determined
+    // by the original move until we reach the limit, then to the
+    // start or end of the next row.
+    var isTileWrapping = isLeftShift ? itemToMove.x - 1 < 0 : itemToMove.x + 1 >= cols;
+    var deltaShift = isLeftShift ? -1 : 1;
+    x = isTileWrapping ? isLeftShift ? cols - 1 : 0 : itemToMove.x + deltaShift;
+    y = isTileWrapping ? itemToMove.y + deltaShift : itemToMove.y;
   }
 
-  return moveElement(layout, itemToMove, compactH ? itemToMove.x + 1 : undefined, compactV ? itemToMove.y + 1 : undefined, isUserAction, preventCollision, compactType, cols);
+  return moveElement(layout, itemToMove, x, y, isUserAction, preventCollision, compactType, cols, isLeftShift);
 }
 /**
  * Helper to convert a number to a percentage string.
@@ -627,7 +669,7 @@ function sortLayoutItems(layout
 )
 /*: Layout*/
 {
-  if (compactType === "horizontal") return sortLayoutItemsByColRow(layout);else return sortLayoutItemsByRowCol(layout);
+  if (compactType === "horizontal" || compactType === "wrap") return sortLayoutItemsByColRow(layout);else return sortLayoutItemsByRowCol(layout);
 }
 /**
  * Sort layout items by row ascending and column ascending.
